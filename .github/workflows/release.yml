@@ -11,7 +11,8 @@ permissions:
   packages: write
 
 jobs:
-  docker:
+  ghcr:
+    name: Build & push to GHCR
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,20 +30,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        continue-on-error: true
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Compute image tags
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ghcr.io/onatakduman/gatus-admin
-            iamonat/gatus-admin
+          images: ghcr.io/onatakduman/gatus-admin
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -59,5 +51,64 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=ghcr
+          cache-to: type=gha,mode=max,scope=ghcr
+
+  dockerhub:
+    name: Build & push to Docker Hub
+    runs-on: ubuntu-latest
+    # Only run when the DOCKERHUB_TOKEN secret is configured.
+    if: ${{ vars.DOCKERHUB_USERNAME != '' || true }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Docker Hub credentials
+        id: check
+        run: |
+          if [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Skipping Docker Hub push — DOCKERHUB_TOKEN secret not set."
+          fi
+
+      - name: Set up QEMU
+        if: steps.check.outputs.ready == 'true'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        if: steps.check.outputs.ready == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: steps.check.outputs.ready == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Compute image tags
+        if: steps.check.outputs.ready == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: iamonat/gatus-admin
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Build and push
+        if: steps.check.outputs.ready == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: prod
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=dockerhub
+          cache-to: type=gha,mode=max,scope=dockerhub
