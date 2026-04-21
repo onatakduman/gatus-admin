@@ -1,0 +1,23 @@
+# Dev override for local development with hot-reload.
+# Usage: docker compose -f docker-compose.example.yml -f docker-compose.dev.yml up --build
+
+services:
+  gatus:
+    ports:
+      - "8080:8080"
+
+  admin:
+    build:
+      context: .
+      target: dev
+    image: gatus-admin-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DEV=1
+      - STATUS_URL=http://localhost:8080
+    volumes:
+      - .:/src
+
+  caddy:
+    profiles: ["disabled"]

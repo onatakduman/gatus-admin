@@ -1,0 +1,424 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Alerting</h1>
+  <p class="page-subtitle">Notification providers. Enable the ones you use; disabled providers are not written to the config file.</p>
+
+  <form method="post" action="/admin/alerting">
+    {{.CSRFField}}
+
+    {{/* ── ntfy ─────────────────────────────────────────────────────────── */}}
+    <details {{if .Alerting.Ntfy}}open{{end}}>
+      <summary><input type="checkbox" name="ntfy_enabled" {{if .Alerting.Ntfy}}checked{{end}}> ntfy</summary>
+      {{with .Alerting.Ntfy}}
+      {{$url := .ServerURL}}{{if not $url}}{{$url = .URL}}{{end}}
+      <div class="row">
+        <div class="field"><label>Server URL {{tooltip "alerting.ntfy.server-url"}}</label><input type="text" name="ntfy_server_url" value="{{$url}}"></div>
+        <div class="field"><label>Topic {{tooltip "alerting.ntfy.topic"}}</label><input type="text" name="ntfy_topic" value="{{.Topic}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Token {{tooltip "alerting.ntfy.token"}}</label><input type="text" name="ntfy_token" value="{{.Token}}"></div>
+        <div class="field"><label>Priority {{tooltip "alerting.ntfy.priority"}}</label><input type="number" name="ntfy_priority" value="{{.Priority}}"></div>
+      </div>
+      <div class="field"><label>Click URL {{tooltip "alerting.ntfy.click"}}</label><input type="text" name="ntfy_click" value="{{.Click}}"></div>
+      {{template "thresholds" dict "Prefix" "ntfy" "DA" .DefaultAlert}}
+      {{else}}
+      <div class="row">
+        <div class="field"><label>Server URL</label><input type="text" name="ntfy_server_url" placeholder="https://ntfy.sh"></div>
+        <div class="field"><label>Topic</label><input type="text" name="ntfy_topic"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Token</label><input type="text" name="ntfy_token"></div>
+        <div class="field"><label>Priority</label><input type="number" name="ntfy_priority" value="3"></div>
+      </div>
+      <div class="field"><label>Click URL</label><input type="text" name="ntfy_click"></div>
+      {{template "thresholds" dict "Prefix" "ntfy" "DA" nil}}
+      {{end}}
+    </details>
+
+    {{/* ── Slack ────────────────────────────────────────────────────────── */}}
+    <details {{if .Alerting.Slack}}open{{end}}>
+      <summary><input type="checkbox" name="slack_enabled" {{if .Alerting.Slack}}checked{{end}}> Slack</summary>
+      <div class="field"><label>Webhook URL {{tooltip "alerting.slack.webhook-url"}}</label><input type="text" name="slack_webhook_url" value="{{if .Alerting.Slack}}{{.Alerting.Slack.WebhookURL}}{{end}}"></div>
+      <div class="row">
+        <div class="field"><label>Channel override</label><input type="text" name="slack_channel" value="{{if .Alerting.Slack}}{{.Alerting.Slack.Channel}}{{end}}"></div>
+        <div class="field"><label>Bot name</label><input type="text" name="slack_bot_name" value="{{if .Alerting.Slack}}{{.Alerting.Slack.BotName}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "slack" "DA" (daOf .Alerting.Slack)}}
+    </details>
+
+    {{/* ── Discord ──────────────────────────────────────────────────────── */}}
+    <details {{if .Alerting.Discord}}open{{end}}>
+      <summary><input type="checkbox" name="discord_enabled" {{if .Alerting.Discord}}checked{{end}}> Discord</summary>
+      <div class="field"><label>Webhook URL {{tooltip "alerting.discord.webhook-url"}}</label><input type="text" name="discord_webhook_url" value="{{if .Alerting.Discord}}{{.Alerting.Discord.WebhookURL}}{{end}}"></div>
+      <div class="field"><label>Title</label><input type="text" name="discord_title" value="{{if .Alerting.Discord}}{{.Alerting.Discord.Title}}{{end}}"></div>
+      <div class="field"><label>Message prefix (for pings)</label><input type="text" name="discord_message" value="{{if .Alerting.Discord}}{{.Alerting.Discord.MessageContent}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "discord" "DA" (daOf .Alerting.Discord)}}
+    </details>
+
+    {{/* ── Telegram ─────────────────────────────────────────────────────── */}}
+    <details {{if .Alerting.Telegram}}open{{end}}>
+      <summary><input type="checkbox" name="telegram_enabled" {{if .Alerting.Telegram}}checked{{end}}> Telegram</summary>
+      <div class="row">
+        <div class="field"><label>Bot token {{tooltip "alerting.telegram.token"}}</label><input type="text" name="telegram_token" value="{{if .Alerting.Telegram}}{{.Alerting.Telegram.Token}}{{end}}"></div>
+        <div class="field"><label>Chat/channel ID {{tooltip "alerting.telegram.chat-id"}}</label><input type="text" name="telegram_id" value="{{if .Alerting.Telegram}}{{.Alerting.Telegram.ID}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "telegram" "DA" (daOf .Alerting.Telegram)}}
+    </details>
+
+    {{/* ── Email ────────────────────────────────────────────────────────── */}}
+    <details {{if .Alerting.Email}}open{{end}}>
+      <summary><input type="checkbox" name="email_enabled" {{if .Alerting.Email}}checked{{end}}> Email (SMTP)</summary>
+      <div class="row">
+        <div class="field"><label>From {{tooltip "alerting.email.from"}}</label><input type="email" name="email_from" value="{{if .Alerting.Email}}{{.Alerting.Email.From}}{{end}}"></div>
+        <div class="field"><label>To {{tooltip "alerting.email.to"}}</label><input type="text" name="email_to" value="{{if .Alerting.Email}}{{.Alerting.Email.To}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Host {{tooltip "alerting.email.host"}}</label><input type="text" name="email_host" value="{{if .Alerting.Email}}{{.Alerting.Email.Host}}{{end}}"></div>
+        <div class="field"><label>Port {{tooltip "alerting.email.port"}}</label><input type="number" name="email_port" value="{{if .Alerting.Email}}{{.Alerting.Email.Port}}{{else}}587{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Username {{tooltip "alerting.email.username"}}</label><input type="text" name="email_username" value="{{if .Alerting.Email}}{{.Alerting.Email.Username}}{{end}}"></div>
+        <div class="field"><label>Password {{tooltip "alerting.email.password"}}</label><input type="password" name="email_password" value="{{if .Alerting.Email}}{{.Alerting.Email.Password}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "email" "DA" (daOf .Alerting.Email)}}
+    </details>
+
+    {{/* ── PagerDuty / Opsgenie / Pushover ────────────────────────────── */}}
+    <details {{if .Alerting.PagerDuty}}open{{end}}>
+      <summary><input type="checkbox" name="pagerduty_enabled" {{if .Alerting.PagerDuty}}checked{{end}}> PagerDuty</summary>
+      <div class="field"><label>Integration key {{tooltip "alerting.pagerduty.integration-key"}}</label><input type="text" name="pagerduty_integration_key" value="{{if .Alerting.PagerDuty}}{{.Alerting.PagerDuty.IntegrationKey}}{{end}}"></div>
+      <div class="field"><label>Severity {{tooltip "alerting.pagerduty.severity"}}</label>
+        <select name="pagerduty_severity">
+          {{$s := ""}}{{if .Alerting.PagerDuty}}{{$s = .Alerting.PagerDuty.Severity}}{{end}}
+          {{range $v := (list "" "critical" "error" "warning" "info")}}<option {{if eq $s $v}}selected{{end}}>{{$v}}</option>{{end}}
+        </select>
+      </div>
+      {{template "thresholds" dict "Prefix" "pagerduty" "DA" (daOf .Alerting.PagerDuty)}}
+    </details>
+
+    <details {{if .Alerting.Opsgenie}}open{{end}}>
+      <summary><input type="checkbox" name="opsgenie_enabled" {{if .Alerting.Opsgenie}}checked{{end}}> Opsgenie</summary>
+      <div class="field"><label>API key {{tooltip "alerting.opsgenie.api-key"}}</label><input type="text" name="opsgenie_api_key" value="{{if .Alerting.Opsgenie}}{{.Alerting.Opsgenie.APIKey}}{{end}}"></div>
+      <div class="row">
+        <div class="field"><label>Priority {{tooltip "alerting.opsgenie.priority"}}</label><input type="text" name="opsgenie_priority" value="{{if .Alerting.Opsgenie}}{{.Alerting.Opsgenie.Priority}}{{end}}" placeholder="P3"></div>
+        <div class="field"><label>Tags (comma-separated)</label><input type="text" name="opsgenie_tags" value="{{if .Alerting.Opsgenie}}{{join .Alerting.Opsgenie.Tags ", "}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "opsgenie" "DA" (daOf .Alerting.Opsgenie)}}
+    </details>
+
+    <details {{if .Alerting.Pushover}}open{{end}}>
+      <summary><input type="checkbox" name="pushover_enabled" {{if .Alerting.Pushover}}checked{{end}}> Pushover</summary>
+      <div class="row">
+        <div class="field"><label>Application token {{tooltip "alerting.pushover.application-token"}}</label><input type="text" name="pushover_app_token" value="{{if .Alerting.Pushover}}{{.Alerting.Pushover.ApplicationToken}}{{end}}"></div>
+        <div class="field"><label>User key {{tooltip "alerting.pushover.user-key"}}</label><input type="text" name="pushover_user_key" value="{{if .Alerting.Pushover}}{{.Alerting.Pushover.UserKey}}{{end}}"></div>
+      </div>
+      <div class="field"><label>Priority {{tooltip "alerting.pushover.priority"}}</label><input type="number" name="pushover_priority" value="{{if .Alerting.Pushover}}{{.Alerting.Pushover.Priority}}{{else}}0{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "pushover" "DA" (daOf .Alerting.Pushover)}}
+    </details>
+
+    <details {{if .Alerting.Gotify}}open{{end}}>
+      <summary><input type="checkbox" name="gotify_enabled" {{if .Alerting.Gotify}}checked{{end}}> Gotify</summary>
+      <div class="row">
+        <div class="field"><label>Server URL {{tooltip "alerting.gotify.server-url"}}</label><input type="text" name="gotify_server_url" value="{{if .Alerting.Gotify}}{{.Alerting.Gotify.ServerURL}}{{end}}"></div>
+        <div class="field"><label>Token {{tooltip "alerting.gotify.token"}}</label><input type="text" name="gotify_token" value="{{if .Alerting.Gotify}}{{.Alerting.Gotify.Token}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Priority {{tooltip "alerting.gotify.priority"}}</label><input type="number" name="gotify_priority" value="{{if .Alerting.Gotify}}{{.Alerting.Gotify.Priority}}{{else}}5{{end}}"></div>
+        <div class="field"><label>Title</label><input type="text" name="gotify_title" value="{{if .Alerting.Gotify}}{{.Alerting.Gotify.Title}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "gotify" "DA" (daOf .Alerting.Gotify)}}
+    </details>
+
+    {{/* ── Issue trackers ──────────────────────────────────────────────── */}}
+    <details {{if .Alerting.GitHub}}open{{end}}>
+      <summary><input type="checkbox" name="github_enabled" {{if .Alerting.GitHub}}checked{{end}}> GitHub Issues</summary>
+      <div class="field"><label>Repository URL</label><input type="text" name="github_repository_url" value="{{if .Alerting.GitHub}}{{.Alerting.GitHub.RepositoryURL}}{{end}}" placeholder="https://github.com/user/repo"></div>
+      <div class="field"><label>Token {{tooltip "alerting.github.token"}}</label><input type="text" name="github_token" value="{{if .Alerting.GitHub}}{{.Alerting.GitHub.Token}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "github" "DA" (daOf .Alerting.GitHub)}}
+    </details>
+
+    <details {{if .Alerting.Gitea}}open{{end}}>
+      <summary><input type="checkbox" name="gitea_enabled" {{if .Alerting.Gitea}}checked{{end}}> Gitea Issues</summary>
+      <div class="field"><label>Repository URL</label><input type="text" name="gitea_repository_url" value="{{if .Alerting.Gitea}}{{.Alerting.Gitea.RepositoryURL}}{{end}}"></div>
+      <div class="field"><label>Token</label><input type="text" name="gitea_token" value="{{if .Alerting.Gitea}}{{.Alerting.Gitea.Token}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "gitea" "DA" (daOf .Alerting.Gitea)}}
+    </details>
+
+    <details {{if .Alerting.GitLab}}open{{end}}>
+      <summary><input type="checkbox" name="gitlab_enabled" {{if .Alerting.GitLab}}checked{{end}}> GitLab Alerts</summary>
+      <div class="field"><label>Webhook URL {{tooltip "alerting.gitlab.webhook-url"}}</label><input type="text" name="gitlab_webhook_url" value="{{if .Alerting.GitLab}}{{.Alerting.GitLab.WebhookURL}}{{end}}"></div>
+      <div class="row">
+        <div class="field"><label>Authorization key {{tooltip "alerting.gitlab.authorization-key"}}</label><input type="text" name="gitlab_auth_key" value="{{if .Alerting.GitLab}}{{.Alerting.GitLab.AuthorizationKey}}{{end}}"></div>
+        <div class="field"><label>Severity</label><input type="text" name="gitlab_severity" value="{{if .Alerting.GitLab}}{{.Alerting.GitLab.Severity}}{{end}}" placeholder="high"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "gitlab" "DA" (daOf .Alerting.GitLab)}}
+    </details>
+
+    {{/* ── Chat apps ───────────────────────────────────────────────────── */}}
+    <details {{if .Alerting.Matrix}}open{{end}}>
+      <summary><input type="checkbox" name="matrix_enabled" {{if .Alerting.Matrix}}checked{{end}}> Matrix</summary>
+      <div class="field"><label>Homeserver URL {{tooltip "alerting.matrix.homeserver-url"}}</label><input type="text" name="matrix_homeserver_url" value="{{if .Alerting.Matrix}}{{.Alerting.Matrix.HomeserverURL}}{{end}}"></div>
+      <div class="row">
+        <div class="field"><label>User ID {{tooltip "alerting.matrix.user-id"}}</label><input type="text" name="matrix_user_id" value="{{if .Alerting.Matrix}}{{.Alerting.Matrix.UserID}}{{end}}" placeholder="@alice:matrix.org"></div>
+        <div class="field"><label>Password {{tooltip "alerting.matrix.password"}}</label><input type="password" name="matrix_password" value="{{if .Alerting.Matrix}}{{.Alerting.Matrix.Password}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Room ID {{tooltip "alerting.matrix.room-id"}}</label><input type="text" name="matrix_room_id" value="{{if .Alerting.Matrix}}{{.Alerting.Matrix.RoomID}}{{end}}"></div>
+        <div class="field"><label>Message type</label><input type="text" name="matrix_msgtype" value="{{if .Alerting.Matrix}}{{.Alerting.Matrix.MsgType}}{{end}}" placeholder="m.text"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "matrix" "DA" (daOf .Alerting.Matrix)}}
+    </details>
+
+    <details {{if .Alerting.Line}}open{{end}}>
+      <summary><input type="checkbox" name="line_enabled" {{if .Alerting.Line}}checked{{end}}> LINE</summary>
+      <div class="row">
+        <div class="field"><label>Token {{tooltip "alerting.line.token"}}</label><input type="text" name="line_token" value="{{if .Alerting.Line}}{{.Alerting.Line.Token}}{{end}}"></div>
+        <div class="field"><label>User ID {{tooltip "alerting.line.user-id"}}</label><input type="text" name="line_user_id" value="{{if .Alerting.Line}}{{.Alerting.Line.UserID}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "line" "DA" (daOf .Alerting.Line)}}
+    </details>
+
+    <details {{if .Alerting.Zulip}}open{{end}}>
+      <summary><input type="checkbox" name="zulip_enabled" {{if .Alerting.Zulip}}checked{{end}}> Zulip</summary>
+      <div class="row">
+        <div class="field"><label>API URL {{tooltip "alerting.zulip.api-url"}}</label><input type="text" name="zulip_api_url" value="{{if .Alerting.Zulip}}{{.Alerting.Zulip.APIURL}}{{end}}"></div>
+        <div class="field"><label>API Key {{tooltip "alerting.zulip.api-key"}}</label><input type="text" name="zulip_api_key" value="{{if .Alerting.Zulip}}{{.Alerting.Zulip.APIKey}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Bot name {{tooltip "alerting.zulip.bot-name"}}</label><input type="text" name="zulip_bot_name" value="{{if .Alerting.Zulip}}{{.Alerting.Zulip.BotName}}{{end}}"></div>
+        <div class="field"><label>Organization</label><input type="text" name="zulip_organization" value="{{if .Alerting.Zulip}}{{.Alerting.Zulip.Organization}}{{end}}"></div>
+      </div>
+      <div class="field"><label>To {{tooltip "alerting.zulip.to"}}</label><input type="text" name="zulip_to" value="{{if .Alerting.Zulip}}{{.Alerting.Zulip.To}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "zulip" "DA" (daOf .Alerting.Zulip)}}
+    </details>
+
+    {{/* ── Webhook-only providers (simple URL) ─────────────────────────── */}}
+    {{range $p := (list
+      (dict "Key" "mattermost" "Label" "Mattermost" "Cfg" .Alerting.Mattermost)
+      (dict "Key" "googlechat" "Label" "Google Chat" "Cfg" .Alerting.GoogleChat)
+      (dict "Key" "rocketchat" "Label" "Rocket.Chat" "Cfg" .Alerting.RocketChat)
+      (dict "Key" "n8n" "Label" "n8n" "Cfg" .Alerting.N8n)
+      (dict "Key" "teams_workflows" "Label" "Microsoft Teams Workflow" "Cfg" .Alerting.Teams)
+      (dict "Key" "webex" "Label" "Webex" "Cfg" .Alerting.Webex)
+      (dict "Key" "zapier" "Label" "Zapier" "Cfg" .Alerting.Zapier)
+    )}}
+      <details {{if $p.Cfg}}open{{end}}>
+        <summary><input type="checkbox" name="{{$p.Key}}_enabled" {{if $p.Cfg}}checked{{end}}> {{$p.Label}}</summary>
+        <div class="field"><label>Webhook URL</label><input type="text" name="{{$p.Key}}_webhook_url" value="{{if $p.Cfg}}{{$p.Cfg.WebhookURL}}{{end}}"></div>
+        {{template "thresholds" dict "Prefix" $p.Key "DA" (daOfGeneric $p.Cfg)}}
+      </details>
+    {{end}}
+
+    {{/* ── SMS / email providers ───────────────────────────────────────── */}}
+    <details {{if .Alerting.Twilio}}open{{end}}>
+      <summary><input type="checkbox" name="twilio_enabled" {{if .Alerting.Twilio}}checked{{end}}> Twilio (SMS)</summary>
+      <div class="row">
+        <div class="field"><label>Account SID {{tooltip "alerting.twilio.account-sid"}}</label><input type="text" name="twilio_account_sid" value="{{if .Alerting.Twilio}}{{.Alerting.Twilio.AccountSID}}{{end}}"></div>
+        <div class="field"><label>Auth token {{tooltip "alerting.twilio.auth-token"}}</label><input type="text" name="twilio_auth_token" value="{{if .Alerting.Twilio}}{{.Alerting.Twilio.AuthToken}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>From {{tooltip "alerting.twilio.from"}}</label><input type="text" name="twilio_from" value="{{if .Alerting.Twilio}}{{.Alerting.Twilio.From}}{{end}}"></div>
+        <div class="field"><label>To {{tooltip "alerting.twilio.to"}}</label><input type="text" name="twilio_to" value="{{if .Alerting.Twilio}}{{.Alerting.Twilio.To}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "twilio" "DA" (daOf .Alerting.Twilio)}}
+    </details>
+
+    <details {{if .Alerting.Vonage}}open{{end}}>
+      <summary><input type="checkbox" name="vonage_enabled" {{if .Alerting.Vonage}}checked{{end}}> Vonage (SMS)</summary>
+      <div class="row">
+        <div class="field"><label>API key {{tooltip "alerting.vonage.api-key"}}</label><input type="text" name="vonage_api_key" value="{{if .Alerting.Vonage}}{{.Alerting.Vonage.APIKey}}{{end}}"></div>
+        <div class="field"><label>API secret {{tooltip "alerting.vonage.api-secret"}}</label><input type="text" name="vonage_api_secret" value="{{if .Alerting.Vonage}}{{.Alerting.Vonage.APISecret}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>From</label><input type="text" name="vonage_from" value="{{if .Alerting.Vonage}}{{.Alerting.Vonage.From}}{{end}}"></div>
+        <div class="field"><label>To</label><input type="text" name="vonage_to" value="{{if .Alerting.Vonage}}{{.Alerting.Vonage.To}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "vonage" "DA" (daOf .Alerting.Vonage)}}
+    </details>
+
+    <details {{if .Alerting.Plivo}}open{{end}}>
+      <summary><input type="checkbox" name="plivo_enabled" {{if .Alerting.Plivo}}checked{{end}}> Plivo (SMS)</summary>
+      <div class="row">
+        <div class="field"><label>Auth ID {{tooltip "alerting.plivo.auth-id"}}</label><input type="text" name="plivo_auth_id" value="{{if .Alerting.Plivo}}{{.Alerting.Plivo.AuthID}}{{end}}"></div>
+        <div class="field"><label>Auth token {{tooltip "alerting.plivo.auth-token"}}</label><input type="text" name="plivo_auth_token" value="{{if .Alerting.Plivo}}{{.Alerting.Plivo.AuthToken}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>From</label><input type="text" name="plivo_from" value="{{if .Alerting.Plivo}}{{.Alerting.Plivo.From}}{{end}}"></div>
+        <div class="field"><label>To</label><input type="text" name="plivo_to" value="{{if .Alerting.Plivo}}{{.Alerting.Plivo.To}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "plivo" "DA" (daOf .Alerting.Plivo)}}
+    </details>
+
+    <details {{if .Alerting.Messagebird}}open{{end}}>
+      <summary><input type="checkbox" name="messagebird_enabled" {{if .Alerting.Messagebird}}checked{{end}}> MessageBird (SMS)</summary>
+      <div class="row">
+        <div class="field"><label>Access key {{tooltip "alerting.messagebird.access-key"}}</label><input type="text" name="messagebird_access_key" value="{{if .Alerting.Messagebird}}{{.Alerting.Messagebird.AccessKey}}{{end}}"></div>
+        <div class="field"><label>Originator {{tooltip "alerting.messagebird.originator"}}</label><input type="text" name="messagebird_originator" value="{{if .Alerting.Messagebird}}{{.Alerting.Messagebird.Originator}}{{end}}"></div>
+      </div>
+      <div class="field"><label>Recipients (comma-separated) {{tooltip "alerting.messagebird.recipients"}}</label><input type="text" name="messagebird_recipients" value="{{if .Alerting.Messagebird}}{{.Alerting.Messagebird.Recipients}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "messagebird" "DA" (daOf .Alerting.Messagebird)}}
+    </details>
+
+    <details {{if .Alerting.SendGrid}}open{{end}}>
+      <summary><input type="checkbox" name="sendgrid_enabled" {{if .Alerting.SendGrid}}checked{{end}}> SendGrid</summary>
+      <div class="field"><label>API key {{tooltip "alerting.sendgrid.api-key"}}</label><input type="text" name="sendgrid_api_key" value="{{if .Alerting.SendGrid}}{{.Alerting.SendGrid.APIKey}}{{end}}"></div>
+      <div class="row">
+        <div class="field"><label>From</label><input type="email" name="sendgrid_from" value="{{if .Alerting.SendGrid}}{{.Alerting.SendGrid.From}}{{end}}"></div>
+        <div class="field"><label>To</label><input type="text" name="sendgrid_to" value="{{if .Alerting.SendGrid}}{{.Alerting.SendGrid.To}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "sendgrid" "DA" (daOf .Alerting.SendGrid)}}
+    </details>
+
+    <details {{if .Alerting.AwsSES}}open{{end}}>
+      <summary><input type="checkbox" name="awsses_enabled" {{if .Alerting.AwsSES}}checked{{end}}> AWS SES</summary>
+      <div class="row">
+        <div class="field"><label>Access Key ID</label><input type="text" name="awsses_access_key_id" value="{{if .Alerting.AwsSES}}{{.Alerting.AwsSES.AccessKeyID}}{{end}}"></div>
+        <div class="field"><label>Secret Access Key</label><input type="password" name="awsses_secret_access_key" value="{{if .Alerting.AwsSES}}{{.Alerting.AwsSES.SecretAccessKey}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Region {{tooltip "alerting.awsses.region"}}</label><input type="text" name="awsses_region" value="{{if .Alerting.AwsSES}}{{.Alerting.AwsSES.Region}}{{end}}"></div>
+        <div class="field"><label>From</label><input type="email" name="awsses_from" value="{{if .Alerting.AwsSES}}{{.Alerting.AwsSES.From}}{{end}}"></div>
+      </div>
+      <div class="field"><label>To</label><input type="text" name="awsses_to" value="{{if .Alerting.AwsSES}}{{.Alerting.AwsSES.To}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "awsses" "DA" (daOf .Alerting.AwsSES)}}
+    </details>
+
+    <details {{if .Alerting.Signal}}open{{end}}>
+      <summary><input type="checkbox" name="signal_enabled" {{if .Alerting.Signal}}checked{{end}}> Signal</summary>
+      <div class="row">
+        <div class="field"><label>Number {{tooltip "alerting.signal.number"}}</label><input type="text" name="signal_number" value="{{if .Alerting.Signal}}{{.Alerting.Signal.Number}}{{end}}"></div>
+        <div class="field"><label>Recipients {{tooltip "alerting.signal.recipients"}}</label><input type="text" name="signal_recipients" value="{{if .Alerting.Signal}}{{join .Alerting.Signal.Recipients ", "}}{{end}}" placeholder="+1234, +5678"></div>
+      </div>
+      <div class="field"><label>API URL {{tooltip "alerting.signal.url"}}</label><input type="text" name="signal_url" value="{{if .Alerting.Signal}}{{.Alerting.Signal.URL}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "signal" "DA" (daOf .Alerting.Signal)}}
+    </details>
+
+    {{/* ── Observability / incident platforms ───────────────────────── */}}
+    <details {{if .Alerting.Datadog}}open{{end}}>
+      <summary><input type="checkbox" name="datadog_enabled" {{if .Alerting.Datadog}}checked{{end}}> Datadog</summary>
+      <div class="row">
+        <div class="field"><label>API key {{tooltip "alerting.datadog.api-key"}}</label><input type="text" name="datadog_api_key" value="{{if .Alerting.Datadog}}{{.Alerting.Datadog.APIKey}}{{end}}"></div>
+        <div class="field"><label>Site {{tooltip "alerting.datadog.site"}}</label><input type="text" name="datadog_site" value="{{if .Alerting.Datadog}}{{.Alerting.Datadog.Site}}{{end}}" placeholder="datadoghq.com"></div>
+      </div>
+      <div class="field"><label>Tags (comma-separated)</label><input type="text" name="datadog_tags" value="{{if .Alerting.Datadog}}{{join .Alerting.Datadog.Tags ", "}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "datadog" "DA" (daOf .Alerting.Datadog)}}
+    </details>
+
+    <details {{if .Alerting.NewRelic}}open{{end}}>
+      <summary><input type="checkbox" name="newrelic_enabled" {{if .Alerting.NewRelic}}checked{{end}}> New Relic</summary>
+      <div class="row">
+        <div class="field"><label>API key {{tooltip "alerting.newrelic.api-key"}}</label><input type="text" name="newrelic_api_key" value="{{if .Alerting.NewRelic}}{{.Alerting.NewRelic.APIKey}}{{end}}"></div>
+        <div class="field"><label>Account ID {{tooltip "alerting.newrelic.account-id"}}</label><input type="text" name="newrelic_account_id" value="{{if .Alerting.NewRelic}}{{.Alerting.NewRelic.AccountID}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "newrelic" "DA" (daOf .Alerting.NewRelic)}}
+    </details>
+
+    <details {{if .Alerting.Splunk}}open{{end}}>
+      <summary><input type="checkbox" name="splunk_enabled" {{if .Alerting.Splunk}}checked{{end}}> Splunk (HEC)</summary>
+      <div class="row">
+        <div class="field"><label>HEC URL {{tooltip "alerting.splunk.hec-url"}}</label><input type="text" name="splunk_hec_url" value="{{if .Alerting.Splunk}}{{.Alerting.Splunk.HECURL}}{{end}}"></div>
+        <div class="field"><label>HEC token {{tooltip "alerting.splunk.hec-token"}}</label><input type="text" name="splunk_hec_token" value="{{if .Alerting.Splunk}}{{.Alerting.Splunk.HECToken}}{{end}}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Source</label><input type="text" name="splunk_source" value="{{if .Alerting.Splunk}}{{.Alerting.Splunk.Source}}{{end}}"></div>
+        <div class="field"><label>Source type</label><input type="text" name="splunk_source_type" value="{{if .Alerting.Splunk}}{{.Alerting.Splunk.SourceType}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "splunk" "DA" (daOf .Alerting.Splunk)}}
+    </details>
+
+    <details {{if .Alerting.Squadcast}}open{{end}}>
+      <summary><input type="checkbox" name="squadcast_enabled" {{if .Alerting.Squadcast}}checked{{end}}> Squadcast</summary>
+      <div class="row">
+        <div class="field"><label>Webhook URL {{tooltip "alerting.squadcast.webhook-url"}}</label><input type="text" name="squadcast_webhook_url" value="{{if .Alerting.Squadcast}}{{.Alerting.Squadcast.WebhookURL}}{{end}}"></div>
+        <div class="field"><label>Routing key {{tooltip "alerting.squadcast.routing-key"}}</label><input type="text" name="squadcast_routing_key" value="{{if .Alerting.Squadcast}}{{.Alerting.Squadcast.RoutingKey}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "squadcast" "DA" (daOf .Alerting.Squadcast)}}
+    </details>
+
+    <details {{if .Alerting.Ilert}}open{{end}}>
+      <summary><input type="checkbox" name="ilert_enabled" {{if .Alerting.Ilert}}checked{{end}}> ilert</summary>
+      <div class="row">
+        <div class="field"><label>API key {{tooltip "alerting.ilert.api-key"}}</label><input type="text" name="ilert_api_key" value="{{if .Alerting.Ilert}}{{.Alerting.Ilert.APIKey}}{{end}}"></div>
+        <div class="field"><label>Incident key {{tooltip "alerting.ilert.incident-key"}}</label><input type="text" name="ilert_incident_key" value="{{if .Alerting.Ilert}}{{.Alerting.Ilert.IncidentKey}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "ilert" "DA" (daOf .Alerting.Ilert)}}
+    </details>
+
+    <details {{if .Alerting.IncidentIO}}open{{end}}>
+      <summary><input type="checkbox" name="incidentio_enabled" {{if .Alerting.IncidentIO}}checked{{end}}> incident.io</summary>
+      <div class="field"><label>Routing key {{tooltip "alerting.incident-io.routing-key"}}</label><input type="text" name="incidentio_routing_key" value="{{if .Alerting.IncidentIO}}{{.Alerting.IncidentIO.RoutingKey}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "incidentio" "DA" (daOf .Alerting.IncidentIO)}}
+    </details>
+
+    <details {{if .Alerting.Signl4}}open{{end}}>
+      <summary><input type="checkbox" name="signl4_enabled" {{if .Alerting.Signl4}}checked{{end}}> SIGNL4</summary>
+      <div class="field"><label>Team secret {{tooltip "alerting.signl4.team-secret"}}</label><input type="text" name="signl4_team_secret" value="{{if .Alerting.Signl4}}{{.Alerting.Signl4.TeamSecret}}{{end}}"></div>
+      {{template "thresholds" dict "Prefix" "signl4" "DA" (daOf .Alerting.Signl4)}}
+    </details>
+
+    <details {{if .Alerting.HomeAssistant}}open{{end}}>
+      <summary><input type="checkbox" name="homeassistant_enabled" {{if .Alerting.HomeAssistant}}checked{{end}}> Home Assistant</summary>
+      <div class="row">
+        <div class="field"><label>URL {{tooltip "alerting.homeassistant.url"}}</label><input type="text" name="homeassistant_url" value="{{if .Alerting.HomeAssistant}}{{.Alerting.HomeAssistant.URL}}{{end}}"></div>
+        <div class="field"><label>Token {{tooltip "alerting.homeassistant.token"}}</label><input type="text" name="homeassistant_token" value="{{if .Alerting.HomeAssistant}}{{.Alerting.HomeAssistant.Token}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "homeassistant" "DA" (daOf .Alerting.HomeAssistant)}}
+    </details>
+
+    <details {{if .Alerting.IFTTT}}open{{end}}>
+      <summary><input type="checkbox" name="ifttt_enabled" {{if .Alerting.IFTTT}}checked{{end}}> IFTTT</summary>
+      <div class="row">
+        <div class="field"><label>Webhook key {{tooltip "alerting.ifttt.webhook-key"}}</label><input type="text" name="ifttt_webhook_key" value="{{if .Alerting.IFTTT}}{{.Alerting.IFTTT.WebhookKey}}{{end}}"></div>
+        <div class="field"><label>Event name {{tooltip "alerting.ifttt.event-name"}}</label><input type="text" name="ifttt_event_name" value="{{if .Alerting.IFTTT}}{{.Alerting.IFTTT.EventName}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "ifttt" "DA" (daOf .Alerting.IFTTT)}}
+    </details>
+
+    <details {{if .Alerting.Clickup}}open{{end}}>
+      <summary><input type="checkbox" name="clickup_enabled" {{if .Alerting.Clickup}}checked{{end}}> ClickUp</summary>
+      <div class="row">
+        <div class="field"><label>List ID {{tooltip "alerting.clickup.list-id"}}</label><input type="text" name="clickup_list_id" value="{{if .Alerting.Clickup}}{{.Alerting.Clickup.ListID}}{{end}}"></div>
+        <div class="field"><label>Token {{tooltip "alerting.clickup.token"}}</label><input type="text" name="clickup_token" value="{{if .Alerting.Clickup}}{{.Alerting.Clickup.Token}}{{end}}"></div>
+      </div>
+      {{template "thresholds" dict "Prefix" "clickup" "DA" (daOf .Alerting.Clickup)}}
+    </details>
+
+    {{/* ── Custom webhook ──────────────────────────────────────────────── */}}
+    <details {{if .Alerting.Custom}}open{{end}}>
+      <summary><input type="checkbox" name="custom_enabled" {{if .Alerting.Custom}}checked{{end}}> Custom webhook</summary>
+      <div class="row">
+        <div class="field"><label>URL {{tooltip "alerting.custom.url"}}</label><input type="text" name="custom_url" value="{{if .Alerting.Custom}}{{.Alerting.Custom.URL}}{{end}}"></div>
+        <div class="field"><label>Method {{tooltip "alerting.custom.method"}}</label>
+          <select name="custom_method">
+            {{$m := "POST"}}{{if .Alerting.Custom}}{{if .Alerting.Custom.Method}}{{$m = .Alerting.Custom.Method}}{{end}}{{end}}
+            {{range $v := (list "POST" "GET" "PUT" "PATCH" "DELETE")}}<option {{if eq $m $v}}selected{{end}}>{{$v}}</option>{{end}}
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Body template {{tooltip "alerting.custom.body"}}</label><textarea name="custom_body">{{if .Alerting.Custom}}{{.Alerting.Custom.Body}}{{end}}</textarea></div>
+      {{template "thresholds" dict "Prefix" "custom" "DA" (daOf .Alerting.Custom)}}
+    </details>
+
+    <div style="margin-top: 20px;">
+      <button type="submit" class="btn primary">Save Alerting</button>
+    </div>
+  </form>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>
+
+{{define "thresholds"}}
+{{$prefix := .Prefix}}{{$da := .DA}}
+<div class="row" style="margin-top: 12px;">
+  <div class="field"><label>Failure threshold {{tooltip "alert.failure-threshold"}}</label><input type="number" name="{{$prefix}}_failure_threshold" value="{{if $da}}{{$da.FailureThreshold}}{{end}}" placeholder="2"></div>
+  <div class="field"><label>Success threshold {{tooltip "alert.success-threshold"}}</label><input type="number" name="{{$prefix}}_success_threshold" value="{{if $da}}{{$da.SuccessThreshold}}{{end}}" placeholder="2"></div>
+</div>
+<div class="field"><label><input type="checkbox" name="{{$prefix}}_send_on_resolved" {{if $da}}{{if deref $da.SendOnResolved}}checked{{end}}{{else}}checked{{end}}> Send on resolved {{tooltip "alert.send-on-resolved"}}</label></div>
+{{end}}

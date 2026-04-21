@@ -1,0 +1,98 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">UI / Public Page</h1>
+  <p class="page-subtitle">How the public Gatus status page looks. For this admin panel, see <a href="/admin/brand">Admin Brand</a>.</p>
+
+  <form method="post" action="/admin/ui">
+    {{.CSRFField}}
+
+    <div class="section-card">
+      <div class="section-title">Text</div>
+      <div class="field"><label>Browser title {{tooltip "ui.title"}}</label><input type="text" name="title" value="{{.UI.Title}}"></div>
+      <div class="field"><label>Description (meta) {{tooltip "ui.description"}}</label><input type="text" name="description" value="{{.UI.Description}}"></div>
+      <div class="field"><label>Header text {{tooltip "ui.header"}}</label><input type="text" name="header" value="{{.UI.Header}}"></div>
+      <div class="row">
+        <div class="field"><label>Dashboard heading {{tooltip "ui.dashboard-heading"}}</label><input type="text" name="dashboard_heading" value="{{.UI.DashboardHeading}}"></div>
+        <div class="field"><label>Dashboard subheading {{tooltip "ui.dashboard-subheading"}}</label><input type="text" name="dashboard_subheading" value="{{.UI.DashboardSubheading}}"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Logo &amp; link</div>
+      <div class="field"><label>Logo URL {{tooltip "ui.logo"}}</label><input type="text" name="logo" value="{{.UI.Logo}}"></div>
+      <div class="field"><label>Logo click link {{tooltip "ui.link"}}</label><input type="text" name="link" value="{{.UI.Link}}"></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Favicon</div>
+      {{with .UI.Favicon}}
+      <div class="field"><label>Default (.ico)</label><input type="text" name="favicon_default" value="{{.Default}}"></div>
+      <div class="row">
+        <div class="field"><label>16x16</label><input type="text" name="favicon_16" value="{{.Size16x16}}"></div>
+        <div class="field"><label>32x32</label><input type="text" name="favicon_32" value="{{.Size32x32}}"></div>
+      </div>
+      {{else}}
+      <div class="field"><label>Default (.ico)</label><input type="text" name="favicon_default"></div>
+      <div class="row">
+        <div class="field"><label>16x16</label><input type="text" name="favicon_16"></div>
+        <div class="field"><label>32x32</label><input type="text" name="favicon_32"></div>
+      </div>
+      {{end}}
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Behavior</div>
+      <div class="field"><label><input type="checkbox" name="dark_mode" {{if deref .UI.DarkMode}}checked{{end}}> Dark mode by default {{tooltip "ui.dark-mode"}}</label></div>
+      <div class="row">
+        <div class="field"><label>Default sort by {{tooltip "ui.default-sort-by"}}</label>
+          <select name="default_sort_by">
+            <option value=""></option>
+            {{range $s := (list "name" "group" "health")}}<option {{if eq $.UI.DefaultSortBy $s}}selected{{end}}>{{$s}}</option>{{end}}
+          </select>
+        </div>
+        <div class="field"><label>Default filter by {{tooltip "ui.default-filter-by"}}</label>
+          <select name="default_filter_by">
+            <option value=""></option>
+            {{range $f := (list "none" "failing" "unstable")}}<option {{if eq $.UI.DefaultFilterBy $f}}selected{{end}}>{{$f}}</option>{{end}}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Header buttons</div>
+      <p class="muted" style="margin-bottom: 12px;">One row = one button. Empty rows ignored.</p>
+      {{range .UI.Buttons}}
+      <div class="row">
+        <div class="field"><label>Name</label><input type="text" name="button_name" value="{{.Name}}"></div>
+        <div class="field"><label>Link</label><input type="text" name="button_link" value="{{.Link}}"></div>
+      </div>
+      {{end}}
+      <div class="row">
+        <div class="field"><label>Name</label><input type="text" name="button_name"></div>
+        <div class="field"><label>Link</label><input type="text" name="button_link"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Name</label><input type="text" name="button_name"></div>
+        <div class="field"><label>Link</label><input type="text" name="button_link"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Custom CSS {{tooltip "ui.custom-css"}}</div>
+      <p class="muted" style="margin-bottom: 10px;">Applies to the public Gatus page <strong>and</strong> mirrors into this admin panel — both surfaces stay visually consistent.</p>
+      <div class="field"><textarea name="custom_css" class="code">{{.UI.CustomCSS}}</textarea></div>
+    </div>
+
+    <button type="submit" class="btn primary">Save UI</button>
+  </form>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

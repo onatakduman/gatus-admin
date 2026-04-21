@@ -1,0 +1,25 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Bulk Import Endpoints</h1>
+  <p class="page-subtitle">Paste a Gatus-native endpoint list in YAML. Duplicates (by name) are skipped.</p>
+
+  <div class="section-card">
+    <form method="post" action="/admin/endpoints/bulk">
+      {{.CSRFField}}
+      <div class="field">
+        <label>YAML</label>
+        <textarea name="yaml" class="code" placeholder="- name: foo&#10;  group: MyGroup&#10;  url: https://foo.com&#10;  interval: 5m&#10;  conditions:&#10;    - &quot;[STATUS] == 200&quot;"></textarea>
+      </div>
+      <p class="muted" style="margin-bottom: 14px;">Accepts a YAML list of endpoint objects, with or without a top-level <kbd>endpoints:</kbd> key.</p>
+      <button type="submit" class="btn primary">Import</button>
+      <a href="/admin/endpoints" class="btn ghost">Cancel</a>
+    </form>
+  </div>
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

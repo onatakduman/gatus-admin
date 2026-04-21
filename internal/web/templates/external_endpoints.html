@@ -1,0 +1,53 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">External Endpoints</h1>
+  <p class="page-subtitle">Push-based monitors. Your systems POST status updates to Gatus instead of being polled.</p>
+
+  <div class="section-card">
+    <div class="section-title">Add external endpoint</div>
+    <form method="post" action="/admin/external-endpoints">
+      {{.CSRFField}}
+      <div class="row">
+        <div class="field"><label>Name * {{tooltip "external-endpoint.name"}}</label><input type="text" name="name" required></div>
+        <div class="field"><label>Group {{tooltip "external-endpoint.group"}}</label><input type="text" name="group"></div>
+      </div>
+      <div class="field"><label>Token * {{tooltip "external-endpoint.token"}}</label><input type="text" name="token" required placeholder="random-bearer-token"></div>
+      <div class="field"><label>Heartbeat interval (optional) {{tooltip "external-endpoint.heartbeat.interval"}}</label><input type="text" name="heartbeat_interval" placeholder="5m"></div>
+      <button type="submit" class="btn primary">Add</button>
+    </form>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">Existing</div>
+    <table>
+      <thead><tr><th>Name</th><th>Group</th><th>Heartbeat</th><th>Push URL example</th><th></th></tr></thead>
+      <tbody>
+      {{range .Endpoints}}
+        <tr>
+          <td><strong>{{.Name}}</strong></td>
+          <td>{{if .Group}}<span class="group-tag">{{.Group}}</span>{{end}}</td>
+          <td>{{if .Heartbeat}}{{.Heartbeat.Interval}}{{end}}</td>
+          <td class="muted" style="font-size: 11px;">POST /api/v1/endpoints/{{if .Group}}{{.Group}}_{{end}}{{.Name}}/external?success=true</td>
+          <td>
+            <form method="post" action="/admin/external-endpoints/{{.Name}}/delete" class="inline-form" onsubmit="return confirm('Delete {{.Name}}?');">
+              {{$.CSRFField}}
+              <button type="submit" class="btn danger" style="padding: 4px 10px; font-size: 11px;">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{else}}
+        <tr><td colspan="5" class="muted" style="text-align: center; padding: 30px;">No external endpoints.</td></tr>
+      {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

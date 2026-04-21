@@ -1,0 +1,13 @@
+# Example Caddyfile. Replace status.example.com with your domain and drop this
+# next to docker-compose.yml. Caddy will auto-provision TLS via Let's Encrypt.
+
+status.example.com {
+    # Admin panel under /admin/*
+    handle /admin* {
+        reverse_proxy admin:8000
+    }
+    # Public status page (Gatus) catches the rest
+    handle {
+        reverse_proxy gatus:8080
+    }
+}

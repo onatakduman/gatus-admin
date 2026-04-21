@@ -1,0 +1,21 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  <h1 class="page-title">{{.FileName}}</h1>
+  <p class="page-subtitle">Raw YAML editor. Save validates the YAML syntax.</p>
+
+  <form method="post" action="/admin/advanced/{{.FileName}}">
+    {{.CSRFField}}
+    <div class="section-card">
+      <div class="field"><textarea name="content" class="code" style="min-height: 500px;">{{.Content}}</textarea></div>
+      <button type="submit" class="btn primary">Save</button>
+      <a href="/admin/advanced" class="btn ghost">Back</a>
+    </div>
+  </form>
+
+  {{template "applybar" .}}
+</main>
+</div>
+</body></html>

@@ -1,0 +1,60 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Suites</h1>
+  <p class="page-subtitle">Sequential multi-step checks that share context. Alpha feature in Gatus.</p>
+
+  <div class="section-card">
+    <div class="section-title">Add suite</div>
+    <form method="post" action="/admin/suites">
+      {{.CSRFField}}
+      <div class="row">
+        <div class="field"><label>Name * {{tooltip "suite.name"}}</label><input type="text" name="name" required></div>
+        <div class="field"><label>Group</label><input type="text" name="group"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Interval {{tooltip "suite.interval"}}</label><input type="text" name="interval" placeholder="10m"></div>
+        <div class="field"><label>Timeout {{tooltip "suite.timeout"}}</label><input type="text" name="timeout" placeholder="5m"></div>
+      </div>
+      <div class="field">
+        <label>Context (one key=value per line) {{tooltip "suite.context"}}</label>
+        <textarea name="context" placeholder="username=alice&#10;token=xxx"></textarea>
+      </div>
+      <p class="muted" style="margin-bottom: 14px;">After creating the suite, add its <kbd>endpoints</kbd> via the Advanced YAML editor for <kbd>suites.yaml</kbd>.</p>
+      <button type="submit" class="btn primary">Add Suite</button>
+    </form>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">Existing</div>
+    <table>
+      <thead><tr><th>Name</th><th>Group</th><th>Interval</th><th>Steps</th><th></th></tr></thead>
+      <tbody>
+      {{range .Suites}}
+        <tr>
+          <td><strong>{{.Name}}</strong></td>
+          <td>{{if .Group}}<span class="group-tag">{{.Group}}</span>{{end}}</td>
+          <td>{{.Interval}}</td>
+          <td class="muted">{{len .Endpoints}}</td>
+          <td>
+            <form method="post" action="/admin/suites/{{.Name}}/delete" class="inline-form" onsubmit="return confirm('Delete {{.Name}}?');">
+              {{$.CSRFField}}
+              <button type="submit" class="btn danger" style="padding: 4px 10px; font-size: 11px;">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{else}}
+        <tr><td colspan="5" class="muted" style="text-align: center; padding: 30px;">No suites.</td></tr>
+      {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

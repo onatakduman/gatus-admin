@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+tmp/
+data/
+config/
+!config/.gitkeep
+caddy/data/
+caddy/config/
+*.bak
+*.sqlite
+*.db
+bin/
+dist/

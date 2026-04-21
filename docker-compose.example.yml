@@ -1,0 +1,56 @@
+# Example stack: gatus-admin + Gatus + Caddy reverse-proxy.
+# Copy this file to docker-compose.yml and customize before running.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - status
+
+  gatus:
+    image: twinproduction/gatus:latest
+    container_name: gatus
+    restart: unless-stopped
+    environment:
+      - GATUS_CONFIG_PATH=/config
+    volumes:
+      - ./config:/config
+      - ./data:/data
+    networks:
+      - status
+
+  admin:
+    image: iamonat/gatus-admin:latest
+    # To build from source instead, comment the `image:` line and uncomment:
+    # build: .
+    container_name: gatus-admin
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - GATUS_CONTAINER=gatus
+      - CONFIG_DIR=/config
+      - STATUS_URL=${STATUS_URL:-/}
+    volumes:
+      - ./config:/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - status
+
+volumes:
+  caddy-data:
+  caddy-config:
+
+networks:
+  status:
+    driver: bridge

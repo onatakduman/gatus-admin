@@ -1,0 +1,71 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Maintenance</h1>
+  <p class="page-subtitle">Scheduled downtime windows. Alerts are suppressed inside a window.</p>
+
+  <form method="post" action="/admin/maintenance">
+    {{.CSRFField}}
+    <div class="section-card">
+      <div class="section-title">Windows</div>
+      <div id="windows">
+        {{range .Windows}}
+        <div class="window-row" style="border: 1px dashed var(--border); padding: 14px; margin-bottom: 12px;">
+          <div class="row">
+            <div class="field"><label>Name {{tooltip "maintenance.window.name"}}</label><input type="text" name="w_name" value="{{.Name}}"></div>
+            <div class="field"><label>Start (RFC3339) {{tooltip "maintenance.window.start"}}</label><input type="text" name="w_start" value="{{.Start}}" placeholder="2026-04-20T22:00:00Z"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Duration {{tooltip "maintenance.window.duration"}}</label><input type="text" name="w_duration" value="{{.Duration}}" placeholder="1h"></div>
+            <div class="field"><label>Recurring {{tooltip "maintenance.window.recurring"}}</label>
+              <select name="w_recurring">
+                {{$rec := .Recurring}}
+                {{range $r := (list "" "none" "daily" "weekly" "monthly")}}<option {{if eq $rec $r}}selected{{end}}>{{$r}}</option>{{end}}
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Endpoints (comma-separated) {{tooltip "maintenance.window.endpoints"}}</label><input type="text" name="w_endpoints" value="{{join .Endpoints ", "}}" placeholder="foo, bar.*"></div>
+          <button type="button" class="btn danger" onclick="this.closest('.window-row').remove()">Remove window</button>
+        </div>
+        {{end}}
+        <div class="window-row" style="border: 1px dashed var(--border); padding: 14px; margin-bottom: 12px;">
+          <div class="row">
+            <div class="field"><label>Name</label><input type="text" name="w_name"></div>
+            <div class="field"><label>Start (RFC3339)</label><input type="text" name="w_start" placeholder="2026-04-20T22:00:00Z"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Duration</label><input type="text" name="w_duration" placeholder="1h"></div>
+            <div class="field"><label>Recurring</label>
+              <select name="w_recurring">
+                {{range $r := (list "" "none" "daily" "weekly" "monthly")}}<option>{{$r}}</option>{{end}}
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Endpoints</label><input type="text" name="w_endpoints"></div>
+          <button type="button" class="btn danger" onclick="this.closest('.window-row').remove()">Remove window</button>
+        </div>
+      </div>
+      <button type="button" class="btn ghost" onclick="addWindow()"><i data-lucide="plus"></i> Add window</button>
+      <div style="margin-top: 16px;"><button type="submit" class="btn primary">Save</button></div>
+    </div>
+  </form>
+
+  <script>
+    function addWindow() {
+      var wrap = document.getElementById('windows');
+      var first = wrap.querySelector('.window-row');
+      var clone = first.cloneNode(true);
+      clone.querySelectorAll('input').forEach(function(i){ i.value = ''; });
+      clone.querySelectorAll('select').forEach(function(s){ s.selectedIndex = 0; });
+      wrap.appendChild(clone);
+    }
+  </script>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

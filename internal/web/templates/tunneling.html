@@ -1,0 +1,62 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">SSH Tunneling</h1>
+  <p class="page-subtitle">Reusable SSH bastion definitions. Reference from an endpoint via <kbd>client.tunnel</kbd>.</p>
+
+  <form method="post" action="/admin/tunneling">
+    {{.CSRFField}}
+    <div class="section-card">
+      <div id="tunnels">
+        {{range .Rows}}
+        <div class="window-row" style="border: 1px dashed var(--border); padding: 14px; margin-bottom: 12px;">
+          <div class="row">
+            <div class="field"><label>Name (key)</label><input type="text" name="t_key" value="{{.Key}}" required></div>
+            <div class="field"><label>Host {{tooltip "tunneling.host"}}</label><input type="text" name="t_host" value="{{.Tunnel.Host}}"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Port {{tooltip "tunneling.port"}}</label><input type="number" name="t_port" value="{{if .Tunnel.Port}}{{.Tunnel.Port}}{{end}}" placeholder="22"></div>
+            <div class="field"><label>Username {{tooltip "tunneling.username"}}</label><input type="text" name="t_user" value="{{.Tunnel.Username}}"></div>
+          </div>
+          <div class="field"><label>Password {{tooltip "tunneling.password"}}</label><input type="password" name="t_password" value="{{.Tunnel.Password}}"></div>
+          <div class="field"><label>Private key (PEM) {{tooltip "tunneling.private-key"}}</label><textarea name="t_pkey" style="min-height:100px; font-family: var(--font-body);">{{.Tunnel.PrivateKey}}</textarea></div>
+          <button type="button" class="btn danger" onclick="this.closest('.window-row').remove()">Remove</button>
+        </div>
+        {{end}}
+        <div class="window-row" style="border: 1px dashed var(--border); padding: 14px; margin-bottom: 12px;">
+          <div class="row">
+            <div class="field"><label>Name (key)</label><input type="text" name="t_key" placeholder="bastion-prod"></div>
+            <div class="field"><label>Host</label><input type="text" name="t_host"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Port</label><input type="number" name="t_port" placeholder="22"></div>
+            <div class="field"><label>Username</label><input type="text" name="t_user"></div>
+          </div>
+          <div class="field"><label>Password</label><input type="password" name="t_password"></div>
+          <div class="field"><label>Private key (PEM)</label><textarea name="t_pkey" style="min-height:100px; font-family: var(--font-body);"></textarea></div>
+          <button type="button" class="btn danger" onclick="this.closest('.window-row').remove()">Remove</button>
+        </div>
+      </div>
+      <button type="button" class="btn ghost" onclick="addTunnel()"><i data-lucide="plus"></i> Add tunnel</button>
+      <div style="margin-top: 16px;"><button type="submit" class="btn primary">Save Tunneling</button></div>
+    </div>
+  </form>
+
+  <script>
+    function addTunnel() {
+      var wrap = document.getElementById('tunnels');
+      var first = wrap.querySelector('.window-row');
+      var clone = first.cloneNode(true);
+      clone.querySelectorAll('input, textarea').forEach(function(i){ i.value = ''; });
+      wrap.appendChild(clone);
+    }
+  </script>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

@@ -1,0 +1,28 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Advanced YAML</h1>
+  <p class="page-subtitle">Edit all raw config files in one place. Each file is saved independently. Invalid YAML is rejected.</p>
+
+  {{range .Files}}
+  <div class="section-card">
+    <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>{{.Name}}</span>
+      <span class="muted" style="font-size: 11px; text-transform: none; letter-spacing: 0;">{{.Size}} bytes</span>
+    </div>
+    <form method="post" action="/admin/advanced/{{.Name}}">
+      {{$.CSRFField}}
+      <div class="field"><textarea name="content" class="code" style="min-height: 260px;">{{.Content}}</textarea></div>
+      <button type="submit" class="btn primary">Save {{.Name}}</button>
+    </form>
+  </div>
+  {{end}}
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

@@ -1,0 +1,57 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Security</h1>
+  <p class="page-subtitle">Protect the public status page with HTTP Basic Auth or OIDC. Leave as "none" for a public page.</p>
+
+  <form method="post" action="/admin/security">
+    {{.CSRFField}}
+    <div class="section-card">
+      <div class="section-title">Authentication</div>
+      {{$t := "none"}}{{if .Security}}{{if .Security.Authentication}}{{if .Security.Authentication.Type}}{{$t = .Security.Authentication.Type}}{{end}}{{end}}{{end}}
+      <div class="field">
+        <label>Type</label>
+        <select name="auth_type">
+          {{range $k := (list "none" "basic" "oidc")}}<option {{if eq $t $k}}selected{{end}}>{{$k}}</option>{{end}}
+        </select>
+      </div>
+
+      <details {{if eq $t "basic"}}open{{end}}>
+        <summary>Basic auth</summary>
+        <div class="row">
+          <div class="field"><label>Username {{tooltip "security.basic.username"}}</label><input type="text" name="basic_username" value="{{if .Security}}{{if .Security.Authentication}}{{if .Security.Authentication.Basic}}{{.Security.Authentication.Basic.Username}}{{end}}{{end}}{{end}}"></div>
+          <div class="field"><label>Password {{tooltip "security.basic.password"}}</label><input type="password" name="basic_password" value="{{if .Security}}{{if .Security.Authentication}}{{if .Security.Authentication.Basic}}{{.Security.Authentication.Basic.Password}}{{end}}{{end}}{{end}}"></div>
+        </div>
+      </details>
+
+      <details {{if eq $t "oidc"}}open{{end}}>
+        <summary>OIDC</summary>
+        {{$oidc := .Security}}
+        <div class="field"><label>Issuer URL {{tooltip "security.oidc.issuer-url"}}</label><input type="text" name="oidc_issuer_url" value="{{if $oidc}}{{if $oidc.Authentication}}{{if $oidc.Authentication.OIDC}}{{$oidc.Authentication.OIDC.IssuerURL}}{{end}}{{end}}{{end}}"></div>
+        <div class="field"><label>Redirect URL {{tooltip "security.oidc.redirect-url"}}</label><input type="text" name="oidc_redirect_url" value="{{if $oidc}}{{if $oidc.Authentication}}{{if $oidc.Authentication.OIDC}}{{$oidc.Authentication.OIDC.RedirectURL}}{{end}}{{end}}{{end}}"></div>
+        <div class="row">
+          <div class="field"><label>Client ID {{tooltip "security.oidc.client-id"}}</label><input type="text" name="oidc_client_id" value="{{if $oidc}}{{if $oidc.Authentication}}{{if $oidc.Authentication.OIDC}}{{$oidc.Authentication.OIDC.ClientID}}{{end}}{{end}}{{end}}"></div>
+          <div class="field"><label>Client Secret {{tooltip "security.oidc.client-secret"}}</label><input type="password" name="oidc_client_secret" value="{{if $oidc}}{{if $oidc.Authentication}}{{if $oidc.Authentication.OIDC}}{{$oidc.Authentication.OIDC.ClientSecret}}{{end}}{{end}}{{end}}"></div>
+        </div>
+        <div class="field"><label>Scopes (comma-separated) {{tooltip "security.oidc.scopes"}}</label><input type="text" name="oidc_scopes" value="{{if $oidc}}{{if $oidc.Authentication}}{{if $oidc.Authentication.OIDC}}{{join $oidc.Authentication.OIDC.Scopes ", "}}{{end}}{{end}}{{end}}" placeholder="openid, profile, email"></div>
+      </details>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Authorization</div>
+      <div class="field"><label>Default role</label><input type="text" name="default_role" value="{{if .Security}}{{if .Security.Authorization}}{{.Security.Authorization.DefaultRole}}{{end}}{{end}}" placeholder="viewer"></div>
+      <div class="field"><label>Admin groups (comma-separated)</label><input type="text" name="admin_groups" value="{{if .Security}}{{if .Security.Authorization}}{{join .Security.Authorization.AdminGroups ", "}}{{end}}{{end}}"></div>
+      <div class="field"><label>Viewer groups (comma-separated)</label><input type="text" name="viewer_groups" value="{{if .Security}}{{if .Security.Authorization}}{{join .Security.Authorization.ViewerGroups ", "}}{{end}}{{end}}"></div>
+    </div>
+
+    <button type="submit" class="btn primary">Save Security</button>
+  </form>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

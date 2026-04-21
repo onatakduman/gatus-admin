@@ -1,0 +1,166 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Endpoints</h1>
+  <p class="page-subtitle">Monitored services. Add, edit, or delete endpoints. Changes require Apply to take effect.</p>
+
+  <div class="toolbar">
+    <span class="muted">{{len .Endpoints}} endpoint(s)</span>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">Add endpoint(s)</div>
+    <p class="muted" style="margin-bottom: 14px;">Add one or many URLs at once. All share the same group, interval, conditions, and alert settings. Name is auto-derived from the hostname if left blank.</p>
+    <form method="post" action="/admin/endpoints">
+      {{.CSRFField}}
+
+      <div class="row">
+        <div class="field">
+          <label>Group {{tooltip "endpoint.group"}}</label>
+          <input type="text" name="group" id="group-input" placeholder="Type a new group name or click an existing one below" autocomplete="off">
+          {{if .Groups}}
+          <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;">
+            <span class="muted" style="font-size: 11px;">Existing:</span>
+            {{range .Groups}}
+            <button type="button" class="group-tag" onclick="document.getElementById('group-input').value='{{.}}';" style="cursor: pointer; background: #1a1a1a; border: 1px solid var(--border); font-family: inherit;">{{.}}</button>
+            {{end}}
+          </div>
+          {{end}}
+        </div>
+        <div class="field"><label>Interval {{tooltip "endpoint.interval"}}</label><input type="text" name="interval" placeholder="5m" value="5m"></div>
+      </div>
+
+      <div class="field">
+        <label>URLs * {{tooltip "endpoint.url"}}</label>
+        <div id="urls">
+          <div class="url-row" style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <button type="button" class="btn ghost remove-url" onclick="removeURL(this)" style="flex: 0 0 auto; padding: 7px 10px; line-height: 1;" title="Remove URL"><i data-lucide="minus"></i></button>
+            <input type="text" name="url" required placeholder="https://example.com or tcp://host:port" style="flex: 2;">
+            <input type="text" name="name" placeholder="name (auto if blank)" style="flex: 1;">
+          </div>
+        </div>
+        <button type="button" class="btn ghost" onclick="addURL()" style="margin-top: 8px; padding: 6px 12px;"><i data-lucide="plus"></i> Add URL</button>
+      </div>
+
+      <div class="row">
+        <div class="field"><label>Method {{tooltip "endpoint.method"}}</label>
+          <select name="method">
+            <option value="">(default GET)</option>
+            <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>HEAD</option>
+          </select>
+        </div>
+        <div class="field"><label>Alert Type {{tooltip "alert.type"}}</label>
+          <select name="alert_type">
+            <option value="">None</option>
+            <option value="ntfy">ntfy</option>
+            <option value="slack">slack</option>
+            <option value="discord">discord</option>
+            <option value="telegram">telegram</option>
+            <option value="email">email</option>
+            <option value="custom">custom</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field"><label>Alert Description {{tooltip "alert.description"}}</label><input type="text" name="alert_description" placeholder="Service is unreachable"></div>
+
+      <div class="field">
+        <label>Conditions (one per line) {{tooltip "endpoint.conditions"}}</label>
+        <textarea name="conditions">[STATUS] == 200
+[RESPONSE_TIME] < 5000</textarea>
+      </div>
+      <div class="field">
+        <label>Headers (one per line, key: value) {{tooltip "endpoint.headers"}}</label>
+        <textarea name="headers" placeholder="Authorization: Bearer xxx"></textarea>
+      </div>
+      <div class="field"><label>Body {{tooltip "endpoint.body"}}</label><textarea name="body"></textarea></div>
+
+      <details>
+        <summary>Advanced: client / DNS / SSH / UI / labels</summary>
+        <div class="row">
+          <div class="field"><label>Client timeout {{tooltip "endpoint.client.timeout"}}</label><input type="text" name="client_timeout" placeholder="10s"></div>
+          <div class="field"><label>Proxy URL {{tooltip "endpoint.client.proxy-url"}}</label><input type="text" name="client_proxy_url"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>DNS resolver {{tooltip "endpoint.client.dns-resolver"}}</label><input type="text" name="client_dns_resolver" placeholder="tcp://8.8.8.8:53"></div>
+          <div class="field"><label>SSH tunnel name {{tooltip "endpoint.client.tunnel"}}</label><input type="text" name="client_tunnel"></div>
+        </div>
+        <div class="field"><label><input type="checkbox" name="client_insecure"> Skip TLS verification {{tooltip "endpoint.client.insecure"}}</label></div>
+        <div class="field"><label><input type="checkbox" name="client_ignore_redirect"> Ignore redirects {{tooltip "endpoint.client.ignore-redirect"}}</label></div>
+        <div class="field"><label><input type="checkbox" name="graphql"> GraphQL body {{tooltip "endpoint.graphql"}}</label></div>
+        <div class="row">
+          <div class="field"><label>DNS query type {{tooltip "endpoint.dns.query-type"}}</label>
+            <select name="dns_query_type">
+              <option value=""></option>
+              {{range $t := (list "A" "AAAA" "MX" "NS" "TXT" "SRV" "CNAME" "PTR")}}<option>{{$t}}</option>{{end}}
+            </select>
+          </div>
+          <div class="field"><label>DNS query name</label><input type="text" name="dns_query_name" placeholder="example.com"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>SSH username {{tooltip "endpoint.ssh.username"}}</label><input type="text" name="ssh_username"></div>
+          <div class="field"><label>SSH password {{tooltip "endpoint.ssh.password"}}</label><input type="password" name="ssh_password"></div>
+        </div>
+        <div class="field"><label><input type="checkbox" name="ui_hide_hostname"> Hide hostname on status page {{tooltip "endpoint.ui.hide-hostname"}}</label></div>
+        <div class="field"><label><input type="checkbox" name="ui_hide_url"> Hide URL {{tooltip "endpoint.ui.hide-url"}}</label></div>
+        <div class="field"><label><input type="checkbox" name="ui_hide_errors"> Hide errors {{tooltip "endpoint.ui.hide-errors"}}</label></div>
+        <div class="field"><label>Extra labels (key=value per line) {{tooltip "endpoint.extra-labels"}}</label><textarea name="extra_labels" placeholder="service=api&#10;env=prod"></textarea></div>
+      </details>
+
+      <button type="submit" class="btn primary">Add</button>
+    </form>
+  </div>
+
+  <script>
+    function addURL() {
+      var urls = document.getElementById('urls');
+      var first = urls.querySelector('.url-row');
+      var clone = first.cloneNode(true);
+      clone.querySelectorAll('input').forEach(function(i){ i.value = ''; });
+      urls.appendChild(clone);
+    }
+    function removeURL(btn) {
+      var urls = document.getElementById('urls');
+      if (urls.querySelectorAll('.url-row').length > 1) {
+        btn.closest('.url-row').remove();
+      } else {
+        btn.closest('.url-row').querySelectorAll('input').forEach(function(i){ i.value = ''; });
+      }
+    }
+  </script>
+
+  <div class="section-card">
+    <div class="section-title">Existing endpoints</div>
+    <table>
+      <thead><tr><th>Name</th><th>Group</th><th>URL</th><th>Interval</th><th>Conditions</th><th></th></tr></thead>
+      <tbody>
+      {{range .Endpoints}}
+        <tr>
+          <td><strong>{{.Name}}</strong></td>
+          <td>{{if .Group}}<span class="group-tag">{{.Group}}</span>{{end}}</td>
+          <td class="muted" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{.URL}}</td>
+          <td>{{.Interval}}</td>
+          <td class="muted" style="font-size: 11px;">{{join .Conditions " · "}}</td>
+          <td>
+            <a href="/admin/endpoints/{{.Name}}/edit" class="btn ghost" style="padding: 4px 10px; font-size: 11px;">Edit</a>
+            <form method="post" action="/admin/endpoints/{{.Name}}/delete" class="inline-form" onsubmit="return confirm('Delete {{.Name}}?');">
+              {{$.CSRFField}}
+              <button type="submit" class="btn danger" style="padding: 4px 10px; font-size: 11px;">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{else}}
+        <tr><td colspan="6" class="muted" style="text-align: center; padding: 40px;">No endpoints yet.</td></tr>
+      {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

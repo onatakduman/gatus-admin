@@ -1,0 +1,19 @@
+{{template "head" .}}
+<div class="login-card">
+  {{if .Brand.LogoFull}}<img class="logo" src="{{.Brand.LogoFull}}" alt="{{.Brand.Name}}">{{end}}
+  <h1>{{.Brand.Name}}</h1>
+  {{with .Brand.Tagline}}<p class="muted" style="text-align:center; margin: -12px 0 20px;">{{.}}</p>{{end}}
+  {{template "flashes" .}}
+  <form method="post" action="/admin/login">
+    {{.CSRFField}}
+    <div class="field">
+      <label>Password</label>
+      <input type="password" name="password" autofocus required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn primary" style="width: 100%;">Sign in</button>
+  </form>
+  <p class="muted" style="text-align: center; margin-top: 20px;">
+    <a href="{{.StatusURL}}" style="color: var(--text-muted);">← Status page</a>
+  </p>
+</div>
+</body></html>

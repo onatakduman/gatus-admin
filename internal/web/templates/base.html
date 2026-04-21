@@ -1,0 +1,229 @@
+{{define "head"}}<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.PageTitle}} · {{.Brand.Name}}</title>
+{{if .Brand.Favicon}}<link rel="icon" href="{{.Brand.Favicon}}">{{end}}
+{{with .Brand.Fonts.Heading}}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{.}}&display=swap">{{end}}
+{{with .Brand.Fonts.Body}}{{if ne . $.Brand.Fonts.Heading}}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{.}}&display=swap">{{end}}{{end}}
+<link rel="stylesheet" href="/admin/static/style.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Run as soon as DOM is parsed so icons appear without a flash.
+  function gaRenderIcons(){ if (window.lucide) lucide.createIcons(); }
+  if (document.readyState !== 'loading') gaRenderIcons();
+  else document.addEventListener('DOMContentLoaded', gaRenderIcons);
+  window.refreshIcons = gaRenderIcons;
+</script>
+<style>
+/* Reserve space for icons before Lucide swaps them in — kills layout shift. */
+i[data-lucide]{display:inline-block;width:16px;height:16px;}
+</style>
+<style>
+/* ── Brand overrides — full shadcn-style token set per mode ─────────── */
+:root{
+{{with .Brand.Light.Background}}  --background:{{.}};{{end}}
+{{with .Brand.Light.Foreground}}  --foreground:{{.}};{{end}}
+{{with .Brand.Light.Card}}  --card:{{.}};{{end}}
+{{with .Brand.Light.CardForeground}}  --card-foreground:{{.}};{{end}}
+{{with .Brand.Light.Popover}}  --popover:{{.}};{{end}}
+{{with .Brand.Light.PopoverForeground}}  --popover-foreground:{{.}};{{end}}
+{{with .Brand.Light.Primary}}  --primary:{{.}};{{end}}
+{{with .Brand.Light.PrimaryForeground}}  --primary-foreground:{{.}};{{end}}
+{{with .Brand.Light.Secondary}}  --secondary:{{.}};{{end}}
+{{with .Brand.Light.SecondaryForeground}}  --secondary-foreground:{{.}};{{end}}
+{{with .Brand.Light.Muted}}  --muted:{{.}};{{end}}
+{{with .Brand.Light.MutedForeground}}  --muted-foreground:{{.}};{{end}}
+{{with .Brand.Light.Accent}}  --accent:{{.}};{{end}}
+{{with .Brand.Light.AccentForeground}}  --accent-foreground:{{.}};{{end}}
+{{with .Brand.Light.Destructive}}  --destructive:{{.}};{{end}}
+{{with .Brand.Light.DestructiveForeground}}  --destructive-foreground:{{.}};{{end}}
+{{with .Brand.Light.Border}}  --border:{{.}};{{end}}
+{{with .Brand.Light.Input}}  --input:{{.}};{{end}}
+{{with .Brand.Light.Ring}}  --ring:{{.}};{{end}}
+{{with .Brand.Light.Sidebar}}  --sidebar:{{.}};{{end}}
+{{with .Brand.Light.SidebarForeground}}  --sidebar-foreground:{{.}};{{end}}
+{{with .Brand.Light.SidebarPrimary}}  --sidebar-primary:{{.}};{{end}}
+{{with .Brand.Light.SidebarPrimaryForeground}}  --sidebar-primary-foreground:{{.}};{{end}}
+{{with .Brand.Light.SidebarAccent}}  --sidebar-accent:{{.}};{{end}}
+{{with .Brand.Light.SidebarAccentForeground}}  --sidebar-accent-foreground:{{.}};{{end}}
+{{with .Brand.Light.SidebarBorder}}  --sidebar-border:{{.}};{{end}}
+{{with .Brand.Light.SidebarRing}}  --sidebar-ring:{{.}};{{end}}
+{{with .Brand.Radius}}  --radius:{{.}};{{end}}
+{{with .Brand.Fonts.Sans}}  --font-body:'{{.}}',Inter,system-ui,sans-serif;{{end}}
+{{with .Brand.Fonts.Mono}}  --font-mono:'{{.}}',ui-monospace,monospace;{{end}}
+{{with .Brand.Fonts.Heading}}  --font-heading:'{{.}}',Inter,system-ui,sans-serif;{{end}}
+{{with .Brand.Fonts.Body}}  --font-body:'{{.}}',Inter,system-ui,sans-serif;{{end}}
+{{if eq .Brand.Density "compact"}}  --space:12px;--field-pad:6px 9px;{{end}}
+{{if eq .Brand.Density "comfortable"}}  --space:24px;--field-pad:11px 13px;{{end}}
+}
+.dark{
+{{with .Brand.Dark.Background}}  --background:{{.}};{{end}}
+{{with .Brand.Dark.Foreground}}  --foreground:{{.}};{{end}}
+{{with .Brand.Dark.Card}}  --card:{{.}};{{end}}
+{{with .Brand.Dark.CardForeground}}  --card-foreground:{{.}};{{end}}
+{{with .Brand.Dark.Popover}}  --popover:{{.}};{{end}}
+{{with .Brand.Dark.PopoverForeground}}  --popover-foreground:{{.}};{{end}}
+{{with .Brand.Dark.Primary}}  --primary:{{.}};{{end}}
+{{with .Brand.Dark.PrimaryForeground}}  --primary-foreground:{{.}};{{end}}
+{{with .Brand.Dark.Secondary}}  --secondary:{{.}};{{end}}
+{{with .Brand.Dark.SecondaryForeground}}  --secondary-foreground:{{.}};{{end}}
+{{with .Brand.Dark.Muted}}  --muted:{{.}};{{end}}
+{{with .Brand.Dark.MutedForeground}}  --muted-foreground:{{.}};{{end}}
+{{with .Brand.Dark.Accent}}  --accent:{{.}};{{end}}
+{{with .Brand.Dark.AccentForeground}}  --accent-foreground:{{.}};{{end}}
+{{with .Brand.Dark.Destructive}}  --destructive:{{.}};{{end}}
+{{with .Brand.Dark.DestructiveForeground}}  --destructive-foreground:{{.}};{{end}}
+{{with .Brand.Dark.Border}}  --border:{{.}};{{end}}
+{{with .Brand.Dark.Input}}  --input:{{.}};{{end}}
+{{with .Brand.Dark.Ring}}  --ring:{{.}};{{end}}
+{{with .Brand.Dark.Sidebar}}  --sidebar:{{.}};{{end}}
+{{with .Brand.Dark.SidebarForeground}}  --sidebar-foreground:{{.}};{{end}}
+{{with .Brand.Dark.SidebarPrimary}}  --sidebar-primary:{{.}};{{end}}
+{{with .Brand.Dark.SidebarPrimaryForeground}}  --sidebar-primary-foreground:{{.}};{{end}}
+{{with .Brand.Dark.SidebarAccent}}  --sidebar-accent:{{.}};{{end}}
+{{with .Brand.Dark.SidebarAccentForeground}}  --sidebar-accent-foreground:{{.}};{{end}}
+{{with .Brand.Dark.SidebarBorder}}  --sidebar-border:{{.}};{{end}}
+{{with .Brand.Dark.SidebarRing}}  --sidebar-ring:{{.}};{{end}}
+}
+.page-title, .section-title, .logo-title, .brand-name, .docs-page-title, .docs-side-title, h1, h2, h3, h4 {
+  {{with .Brand.HeadingCase}}{{if eq . "uppercase"}}text-transform:uppercase;{{end}}{{end}}
+  {{with .Brand.HeadingTrack}}{{if eq . "tight"}}letter-spacing:-0.02em;{{end}}{{if eq . "wide"}}letter-spacing:0.12em;{{end}}{{end}}
+}
+.brand-icon { {{with .Brand.LogoSize}}{{if eq . "small"}}width:26px;height:26px;{{end}}{{if eq . "large"}}width:48px;height:48px;{{end}}{{end}} }
+.brand-icon img { {{with .Brand.LogoSize}}{{if eq . "small"}}width:18px;height:18px;{{end}}{{if eq . "large"}}width:34px;height:34px;{{end}}{{end}} }
+
+{{/* Active item style overrides */}}
+{{if eq .Brand.ActiveStyle "pill"}}
+.sidebar .nav-item.active { background: var(--sidebar-primary); color: var(--sidebar-primary-foreground); border-radius: 999px; }
+.sidebar .nav-item.active::before { display: none; }
+.sidebar .nav-item.active [data-lucide] { color: var(--sidebar-primary-foreground); }
+{{end}}
+{{if eq .Brand.ActiveStyle "glow"}}
+.sidebar .nav-item.active { background: var(--sidebar-accent); box-shadow: 0 0 0 1px var(--sidebar-primary), 0 0 18px -8px var(--sidebar-primary); }
+.sidebar .nav-item.active::before { display: none; }
+{{end}}
+</style>
+{{with .BrandCustomCSS}}
+<style data-source="admin-brand">
+/* Admin-only custom CSS — Admin Brand → Custom CSS */
+{{.}}
+</style>
+{{end}}
+{{with .GatusCustomCSS}}
+<style data-source="gatus-ui">
+/* Mirrored from Gatus public page (Brand → Mirror toggle is on). */
+{{.}}
+</style>
+{{end}}
+</head>
+<body>
+{{end}}
+
+{{define "sidebar"}}
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      {{if .Brand.LogoSquare}}<img src="{{.Brand.LogoSquare}}" alt="">{{else}}<i data-lucide="activity"></i>{{end}}
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">{{.Brand.Name}}</span>
+      {{with .Brand.Tagline}}<span class="brand-sub">{{.}}</span>{{end}}
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-label">Monitoring</div>
+      <a href="/admin/endpoints" class="nav-item {{if eq .Active "endpoints"}}active{{end}}"><i data-lucide="activity"></i><span>Endpoints</span></a>
+      <a href="/admin/external-endpoints" class="nav-item {{if eq .Active "external-endpoints"}}active{{end}}"><i data-lucide="arrow-down-up"></i><span>External Endpoints</span></a>
+      <a href="/admin/suites" class="nav-item {{if eq .Active "suites"}}active{{end}}"><i data-lucide="list-checks"></i><span>Suites</span></a>
+      <a href="/admin/alerting" class="nav-item {{if eq .Active "alerting"}}active{{end}}"><i data-lucide="bell"></i><span>Alerting</span></a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Appearance</div>
+      <a href="/admin/ui" class="nav-item {{if eq .Active "ui"}}active{{end}}"><i data-lucide="layout"></i><span>UI / Public Page</span></a>
+      <a href="/admin/brand" class="nav-item {{if eq .Active "brand"}}active{{end}}"><i data-lucide="palette"></i><span>Admin Brand</span></a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Operations</div>
+      <a href="/admin/announcements" class="nav-item {{if eq .Active "announcements"}}active{{end}}"><i data-lucide="megaphone"></i><span>Announcements</span></a>
+      <a href="/admin/maintenance" class="nav-item {{if eq .Active "maintenance"}}active{{end}}"><i data-lucide="calendar-clock"></i><span>Maintenance</span></a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">System</div>
+      <a href="/admin/security" class="nav-item {{if eq .Active "security"}}active{{end}}"><i data-lucide="shield"></i><span>Security</span></a>
+      <a href="/admin/tunneling" class="nav-item {{if eq .Active "tunneling"}}active{{end}}"><i data-lucide="server"></i><span>Tunneling</span></a>
+      <a href="/admin/core" class="nav-item {{if eq .Active "core"}}active{{end}}"><i data-lucide="settings-2"></i><span>Core</span></a>
+      <a href="/admin/advanced" class="nav-item {{if eq .Active "advanced"}}active{{end}}"><i data-lucide="file-code-2"></i><span>Advanced YAML</span></a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Other</div>
+      <a href="{{.StatusURL}}" target="_blank" rel="noopener" class="nav-item"><i data-lucide="external-link"></i><span>View Status Page</span></a>
+    </div>
+  </nav>
+
+  <div class="sidebar-foot">
+    <form method="post" action="/admin/logout" class="inline-form" style="width: 100%;">
+      {{.CSRFField}}
+      <button type="submit" class="nav-item nav-foot-btn"><i data-lucide="log-out"></i><span>Logout</span></button>
+    </form>
+  </div>
+</aside>
+{{end}}
+
+{{define "flashes"}}
+{{range .FlashOk}}<div class="flash ok">{{.}}</div>{{end}}
+{{range .FlashError}}<div class="flash err">{{.}}</div>{{end}}
+{{end}}
+
+{{define "applybar"}}
+<div class="apply-bar">
+  <form method="post" action="/admin/apply" class="inline-form">
+    {{.CSRFField}}
+    <button type="submit" class="btn primary">Apply &amp; Restart Gatus</button>
+  </form>
+</div>
+{{end}}
+
+{{/* Legacy stub: in-flow docs panel (no longer rendered; right aside is used instead). */}}
+{{define "docspanel"}}{{end}}
+
+{{define "docsside"}}
+{{$active := .Active}}{{$content := docsContent $active}}{{$url := docsURL $active}}
+{{if $content}}
+<aside class="docs-side" id="docs-side">
+  <div class="docs-side-head">
+    <span class="docs-side-title"><i data-lucide="book-open"></i> Reference</span>
+    <button type="button" class="docs-toggle" onclick="toggleDocs()" aria-label="Hide docs" title="Hide reference"><i data-lucide="x"></i></button>
+  </div>
+  <div class="docs-body">
+    <h3 class="docs-page-title">{{.PageTitle}}</h3>
+    {{$content}}
+    {{if $url}}<p style="margin-top: 16px;"><a href="{{$url}}" target="_blank" rel="noopener" class="btn ghost" style="display: inline-flex; align-items: center; padding: 4px 10px; font-size: 11px;"><i data-lucide="external-link"></i> Open on gatus.io</a></p>{{end}}
+  </div>
+</aside>
+<button type="button" class="docs-reopen" id="docs-reopen" onclick="toggleDocs()" title="Show reference"><i data-lucide="book-open"></i></button>
+<script>
+(function(){
+  var KEY = 'gatusAdmin.docsHidden';
+  var aside = document.getElementById('docs-side');
+  var btn   = document.getElementById('docs-reopen');
+  var hidden = localStorage.getItem(KEY) === '1';
+  function apply(){
+    document.body.classList.toggle('docs-hidden', hidden);
+  }
+  window.toggleDocs = function(){
+    hidden = !hidden;
+    localStorage.setItem(KEY, hidden ? '1' : '0');
+    apply();
+  };
+  apply();
+})();
+</script>
+{{end}}{{end}}

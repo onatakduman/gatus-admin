@@ -1,0 +1,51 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Edit Endpoint</h1>
+  <p class="page-subtitle">{{.Endpoint.Name}}</p>
+
+  <div class="section-card">
+    <form method="post" action="/admin/endpoints/{{.Endpoint.Name}}">
+      {{.CSRFField}}
+      <div class="row">
+        <div class="field"><label>Name *</label><input type="text" name="name" required value="{{.Endpoint.Name}}"></div>
+        <div class="field"><label>Group</label><input type="text" name="group" value="{{.Endpoint.Group}}"></div>
+      </div>
+      <div class="field"><label>URL *</label><input type="text" name="url" required value="{{.Endpoint.URL}}"></div>
+      <div class="row">
+        <div class="field"><label>Method</label>
+          <select name="method">
+            <option value="" {{if eq .Endpoint.Method ""}}selected{{end}}>(default GET)</option>
+            {{range $m := (list "GET" "POST" "PUT" "DELETE" "HEAD")}}<option {{if eq $.Endpoint.Method $m}}selected{{end}}>{{$m}}</option>{{end}}
+          </select>
+        </div>
+        <div class="field"><label>Interval</label><input type="text" name="interval" value="{{.Endpoint.Interval}}"></div>
+      </div>
+      <div class="field"><label>Conditions</label><textarea name="conditions">{{.ConditionsJoined}}</textarea></div>
+      <div class="field"><label>Headers</label><textarea name="headers">{{.HeadersJoined}}</textarea></div>
+      <div class="field"><label>Body</label><textarea name="body">{{.Endpoint.Body}}</textarea></div>
+      <div class="row">
+        <div class="field"><label>Alert Type</label>
+          <select name="alert_type">
+            <option value="">None</option>
+            {{$at := ""}}{{if .Endpoint.Alerts}}{{$at = (index .Endpoint.Alerts 0).Type}}{{end}}
+            {{range $a := (list "ntfy" "slack" "discord" "telegram" "email" "custom")}}<option {{if eq $at $a}}selected{{end}}>{{$a}}</option>{{end}}
+          </select>
+        </div>
+        <div class="field"><label>Alert Description</label>
+          <input type="text" name="alert_description" value="{{if .Endpoint.Alerts}}{{(index .Endpoint.Alerts 0).Description}}{{end}}">
+        </div>
+      </div>
+      <button type="submit" class="btn primary">Save</button>
+      <a href="/admin/endpoints" class="btn ghost">Cancel</a>
+    </form>
+  </div>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>

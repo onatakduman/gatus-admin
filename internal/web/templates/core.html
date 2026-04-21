@@ -1,0 +1,57 @@
+{{template "head" .}}
+<div class="layout">
+{{template "sidebar" .}}
+<main class="main">
+  {{template "flashes" .}}
+  {{template "docspanel" .}}
+  <h1 class="page-title">Core</h1>
+  <p class="page-subtitle">Web server, storage, security, metrics. Advanced users only.</p>
+
+  <form method="post" action="/admin/core">
+    {{.CSRFField}}
+
+    <div class="section-card">
+      <div class="section-title">Web server</div>
+      <div class="row">
+        <div class="field"><label>Address</label><input type="text" name="web_address" value="{{if .Core.Web}}{{.Core.Web.Address}}{{end}}"></div>
+        <div class="field"><label>Port</label><input type="number" name="web_port" value="{{if .Core.Web}}{{.Core.Web.Port}}{{end}}"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Storage</div>
+      <div class="row">
+        <div class="field"><label>Type</label>
+          <select name="storage_type">
+            <option value=""></option>
+            {{$t := ""}}{{if .Core.Storage}}{{$t = .Core.Storage.Type}}{{end}}
+            {{range $s := (list "memory" "sqlite" "postgres")}}<option {{if eq $t $s}}selected{{end}}>{{$s}}</option>{{end}}
+          </select>
+        </div>
+        <div class="field"><label>Path</label><input type="text" name="storage_path" value="{{if .Core.Storage}}{{.Core.Storage.Path}}{{end}}"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Basic auth (Security)</div>
+      <p class="muted" style="margin-bottom: 12px;">If set, the public status page will require basic auth. Leave empty to disable.</p>
+      <div class="row">
+        <div class="field"><label>Username</label><input type="text" name="security_user" value="{{if .Core.Security}}{{if .Core.Security.Basic}}{{.Core.Security.Basic.Username}}{{end}}{{end}}"></div>
+        <div class="field"><label>Password</label><input type="password" name="security_pass" value="{{if .Core.Security}}{{if .Core.Security.Basic}}{{.Core.Security.Basic.Password}}{{end}}{{end}}"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Metrics &amp; concurrency</div>
+      <div class="field"><label><input type="checkbox" name="metrics" {{if deref .Core.Metrics}}checked{{end}}> Expose Prometheus metrics at /metrics</label></div>
+      <div class="field"><label>Concurrency (0 = unlimited)</label><input type="number" name="concurrency" value="{{.Core.Concurrency}}"></div>
+    </div>
+
+    <button type="submit" class="btn primary">Save Core</button>
+  </form>
+
+  {{template "applybar" .}}
+</main>
+{{template "docsside" .}}
+</div>
+</body></html>
